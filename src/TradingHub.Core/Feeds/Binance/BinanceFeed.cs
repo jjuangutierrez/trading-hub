@@ -348,6 +348,8 @@ public sealed class BinanceFeed : IMarketDataFeed, ITickerStatsProvider, IKlineH
                 new[] { "wss://fstream.binance.com/market", "wss://fstream.binance.com" }, TimeSpan.FromMinutes(5)));
             _ = Task.Run(() => RunAsync(instrument, sink, sub, "libro", $"{lower}@depth@100ms",
                 new[] { "wss://fstream.binance.com", "wss://fstream.binance.com/public" }, TimeSpan.FromSeconds(10)));
+            
+            _ = Task.Run(() => PollOpenInterestAsync(instrument, sink, sub));
         }
         else
         {
@@ -587,6 +589,40 @@ public sealed class BinanceFeed : IMarketDataFeed, ITickerStatsProvider, IKlineH
         }
 
         return last;
+    }
+    
+    private async Task PollOpenInterestAsync(Instrument instrument, IMarketDataSink sink, LiveSubscription sub)
+    {
+        while (!sub.Token.IsCancellationRequested)
+        {
+            try
+            {
+                // Consulta el endpoint REST oficial de Binance
+                using var doc = await GetAsync($"/openInterest?symbol={instrument.Symbol}", 1, sub.Token).ConfigureAwait(false);
+                decimal oi = Dec(doc.RootElement.GetProperty("openInterest"));
+
+                // Se lo pasa al motor con la fecha y hora actual (3 parámetros)
+                sink.OnOpenInterest(instrument, oi, DateTime.UtcNow); 
+            }
+            catch (OperationCanceledException) when (sub.Token.IsCancellationRequested)
+            {
+                break;
+            }
+            catch
+            {
+                // Ignora errores temporales de red y reintenta
+            }
+
+            try
+            {
+                // Espera 3 segundos antes de volver a consultar
+                await Task.Delay(3000, sub.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
     }
 
     public void Dispose() => _http.Dispose();

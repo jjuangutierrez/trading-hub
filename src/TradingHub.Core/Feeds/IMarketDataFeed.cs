@@ -17,6 +17,10 @@ public interface IMarketDataSink
     void OnTrades(Instrument instrument, IReadOnlyList<Trade> trades);
     void OnDepth(Instrument instrument, DepthUpdate update);
     void OnStatus(Instrument instrument, FeedStatus status, string? message);
+    
+    void OnOpenInterest(Instrument instrument, decimal openInterest, DateTime time)
+    {
+    }
 }
 
 /// <summary>Un proveedor de datos de mercado (exchange, simulador, replay...).</summary>

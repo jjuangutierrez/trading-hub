@@ -58,6 +58,9 @@ public sealed class InstrumentData : IMarketDataSink, IDisposable
     public decimal LastPrice => Trades.Count > 0 ? Trades.GetPrice(Trades.Count - 1) : 0m;
     public decimal BestBid => Depth.HasBid ? Instrument.FromTicks(Depth.BestBidTicks) : 0m;
     public decimal BestAsk => Depth.HasAsk ? Instrument.FromTicks(Depth.BestAskTicks) : 0m;
+    
+    public decimal OpenInterest { get; private set; }
+    public event Action<decimal>? OpenInterestChanged;
 
     /// <summary>Operaciones nuevas agregadas al almacén (índice inicial, cantidad). Hilo de UI.</summary>
     public event Action<int, int>? TradesAppended;
@@ -388,6 +391,12 @@ public sealed class InstrumentData : IMarketDataSink, IDisposable
         _statusDirty = true;
     }
 
+    void IMarketDataSink.OnOpenInterest(Instrument instrument, decimal openInterest, DateTime time)
+    {
+        OpenInterest = openInterest;
+        OpenInterestChanged?.Invoke(openInterest);
+    }
+    
     // ----------------------------------------------------------------- hilo de UI
 
     /// <summary>Aplica lo recibido. Llamar periódicamente desde el hilo de UI.</summary>

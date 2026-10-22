@@ -39,6 +39,16 @@ public sealed class CandleSeries
     public int PriceStep { get; }
 
     public SessionSettings Session { get; }
+    public decimal CurrentOpenInterest { get; set; }
+    
+    public void UpdateOpenInterest(decimal oi)
+    {
+        CurrentOpenInterest = oi;
+        if (_candles.Count > 0)
+        {
+            _candles[^1].OI = oi;
+        }
+    }
 
     /// <summary>Tamaño de fila en precio (tick efectivo).</summary>
     public decimal RowSize => Instrument.TickSize * PriceStep;

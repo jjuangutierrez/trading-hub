@@ -26,7 +26,7 @@ public sealed class ChartViewport
     public double PriceTop { get; set; }
     public double PriceBottom { get; set; }
 
-    public const double MinBarWidth = 1.5;
+    public const double MinBarWidth = 0.1;
     public const double MaxBarWidth = 400;
 
     public int BarSpacing => BarWidth >= 40 ? Math.Max(3, (int)(BarWidth * 0.06)) : BarWidth >= 5 ? Math.Max(1, (int)(BarWidth * 0.22)) : 0;

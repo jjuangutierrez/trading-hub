@@ -157,6 +157,14 @@ public sealed class ChartModel : IIndicatorHost, IIndicatorDataProvider, IDispos
         data.HistoryLoaded += OnHistoryLoaded;
         data.DepthUpdated += OnDepthUpdated;
         data.StatusChanged += () => Invalidate();
+        
+        // Conexión corregida (usando 'data' y 'Series' con mayúscula):
+        data.OpenInterestChanged += oi => 
+        {
+            Series.UpdateOpenInterest(oi);
+            Invalidate(); // Redibuja el gráfico para que la línea de OI se mueva
+        };
+        
         Rebuild();
     }
 
