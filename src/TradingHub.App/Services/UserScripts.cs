@@ -20,7 +20,16 @@ public sealed class UserScripts : IDisposable
     {
         _catalog = catalog;
         Folder = AppPaths.UserIndicators;
-        Directory.CreateDirectory(Folder);
+        try
+        {
+            Directory.CreateDirectory(Folder);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // carpeta de solo lectura (sandbox, permisos, Documents protegido): la app arranca igual
+            this.LogWarn("No se pudo preparar la carpeta de indicadores propios: " + ex.Message);
+        }
+
         WriteExampleIfEmpty();
         _debounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
         _debounce.Tick += (_, _) =>
@@ -57,10 +66,21 @@ public sealed class UserScripts : IDisposable
 
     public ScriptCompileResult? CompileAll()
     {
-        var files = Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)
-            .Where(f => !f.Contains("/bin/") && !f.Contains("/obj/"))
-            .OrderBy(f => f)
-            .ToList();
+        List<string> files;
+        try
+        {
+            files = Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)
+                .Where(f => !f.Contains("/bin/") && !f.Contains("/obj/"))
+                .OrderBy(f => f)
+                .ToList();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // la carpeta puede no existir o no ser legible: no es un error fatal al arrancar
+            this.LogWarn("No se pudieron leer los indicadores propios: " + ex.Message);
+            return LastResult;
+        }
+
         if (files.Count == 0)
         {
             _catalog.RemoveSource(Source);
@@ -98,8 +118,16 @@ public sealed class UserScripts : IDisposable
 
     private void WriteExampleIfEmpty()
     {
-        if (Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories).Any()) return;
-        File.WriteAllText(Path.Combine(Folder, "EjemploDeltaPorcentual.cs"), ExampleSource);
+        try
+        {
+            if (Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories).Any()) return;
+            File.WriteAllText(Path.Combine(Folder, "EjemploDeltaPorcentual.cs"), ExampleSource);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // no poder escribir el ejemplo no debe impedir que Trading Hub abra
+            this.LogWarn("No se pudo crear el indicador de ejemplo: " + ex.Message);
+        }
     }
 
     public const string ExampleSource = """

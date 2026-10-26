@@ -22,6 +22,9 @@ Los indicadores de las estrategias (`Sma`, `Ema`, `Rsi`…) son otra API, más s
 | Delta acumulado (CVD) | Volumen / Order flow | En velas; se reinicia o no en cada sesión |
 | Big Trades (grandes operaciones) | Volumen / Order flow | Burbujas en las órdenes agresivas grandes (suma las ejecuciones de una misma orden aunque barra varios niveles). Umbral fijo o adaptativo (percentil de las órdenes recientes), dónde se ubica en el precio, colores y tamaños |
 | Perfil de volumen por sesión | Volumen / Order flow | Por sesión, semana o toda la historia visible; volumen, delta o bid/ask; área de valor (%), POC, VAH y VAL |
+| Flow VWAP Anclado | Volumen / Order flow | VWAP anclado a un swing, un pico de volumen o una fecha manual; bandas de desvío y burbujas de flujo |
+| Cluster Search: Refill Zones | Volumen / Order flow | Clústeres de absorción pasiva (refill) proyectados hasta que el precio los toca; filtros de volumen y absorción, colores y zonas mitigadas |
+| Multi Volume Profile por Sesión | Volumen / Order flow | Varios perfiles por día, semana o mes; composición AMT, área de valor y POC proyectado hasta que el precio lo toca |
 | RSI | Osciladores | Período |
 | MACD | Osciladores | Medias rápida y lenta, y señal |
 

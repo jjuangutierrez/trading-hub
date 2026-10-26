@@ -347,9 +347,18 @@ public sealed class AppServices
                 }
             }
         };
-        Directory.CreateDirectory(AppPaths.Root);
-        Directory.CreateDirectory(AppPaths.UserIndicators);
-        Directory.CreateDirectory(AppPaths.Strategies);
+        try
+        {
+            Directory.CreateDirectory(AppPaths.Root);
+            Directory.CreateDirectory(AppPaths.UserIndicators);
+            Directory.CreateDirectory(AppPaths.Strategies);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // el proceso puede estar en un entorno de solo lectura (sandbox): la app abre igual
+            this.LogWarn("No se pudieron crear las carpetas de datos: " + ex.Message);
+        }
+
         Hub.RecordingRoot = AppPaths.Ticks;
         KlineHistory.CacheRoot = Path.Combine(AppPaths.Root, "Klines");
         // TRADINGHUB_LIVE_DIR: cartera alternativa (pruebas)
